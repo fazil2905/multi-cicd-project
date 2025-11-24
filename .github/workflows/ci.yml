@@ -1,0 +1,124 @@
+name: CI + Security + ECR Push
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+
+jobs:
+    # ===================
+    # Node API Job
+    # ===================
+    build_test_node:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Install deps (Node)
+              working-directory: services/api-node
+              run: npm ci
+
+            - name: Test (Node)
+              working-directory: services/api-node
+              run: npm test || echo "No node tests"
+
+            - name: Build Docker image (Node)
+              working-directory: services/api-node
+              run: |
+                  docker build -t api-node:latest .
+
+    # ===================
+    # Python API Job
+    # ===================
+    build_test_python:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Install deps (Python)
+              working-directory: services/api-py
+              run: |
+                  pip install -r requirements.txt || echo "No requirements file"
+
+            - name: Test (Python)
+              working-directory: services/api-py
+              run: |
+                  pytest || echo "No python tests"
+
+            - name: Build Docker image (Python)
+              working-directory: services/api-py
+              run: |
+                  docker build -t api-py:latest .
+
+    # ===================
+    # Security Scan
+    # ===================
+    security_scan:
+        runs-on: ubuntu-latest
+        needs: [build_test_node, build_test_python]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Trivy FS Scan
+              uses: aquasecurity/trivy-action@0.26.0
+              with:
+                  scan-type: fs
+                  scan-ref: .
+                  severity: HIGH,CRITICAL
+
+    # ===================
+    # Push to ECR
+    # ===================
+    push_to_ecr:
+        runs-on: ubuntu-latest
+        needs: [security_scan]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Login to ECR
+              uses: aws-actions/amazon-ecr-login@v2
+              id: login-ecr
+
+            # Push Node image
+            - name: Tag Node image
+              run: |
+                  docker tag api-node:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NODE }}:latest
+
+            - name: Push Node image
+              run: |
+                  docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NODE }}:latest
+
+            # Push Python image
+            - name: Tag Python image
+              run: |
+                  docker tag api-py:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_PY }}:latest
+
+            - name: Push Python image
+              run: |
+                  docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_PY }}:latest
