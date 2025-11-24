@@ -24,7 +24,7 @@ jobs:
 
             - name: Install deps (Node)
               working-directory: services/api-node
-              run: npm ci
+              run: npm install
 
             - name: Test (Node)
               working-directory: services/api-node
