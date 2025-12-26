@@ -91,7 +91,7 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.projectKey=multi-cicd-project
+            -Dsonar.projectKey=fazil2905_multi-cicd-project
             -Dsonar.organization=fazil2905
             -Dsonar.sources=services/api-node,services/api-py
             -Dsonar.verbose=true
