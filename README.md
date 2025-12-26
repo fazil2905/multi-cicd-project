@@ -1,40 +1,56 @@
-# Multi-Service DevOps Pipeline (Node + Python + Kubernetes + CI/CD)
+Multi-Service DevOps Pipeline (Node + Python + Kubernetes + CI/CD)
 
-A full microservices DevOps project featuring two APIs (Node.js + Python), fully containerized with Docker, pushed to AWS ECR, and deployed to Kubernetes with GitHub Actions automation.
+A full microservices DevOps project featuring two APIs (Node.js + Python), fully containerized with Docker, analyzed with SonarCloud, pushed to AWS ECR, and deployed to Kubernetes with GitHub Actions automation.
 
-**Includes:**
-- CI 🧪 build + test + security scan
-- CD 🚀 push Docker images to ECR
-- Kubernetes ☸ deployments + services + ingress
+Includes:
 
-## 📁 Project Structure
+CI 🧪 build + test + code quality analysis (SonarCloud) + security scan
+
+CD 🚀 push Docker images to ECR
+
+Kubernetes ☸ deployments + services + ingress
 
 multi-cicd-project/
 │
 ├─ services/
-│ ├─ api-node/ # Node.js microservice
-│ └─ api-py/ # Python Flask microservice
+│  ├─ api-node/   # Node.js microservice
+│  └─ api-py/     # Python Flask microservice
 │
-├─ .github/workflows/ # GitHub Actions CI/CD pipeline
-├─ k8s-manifests/ # Kubernetes Manifests (Deployments, Services, Ingress)
+├─ .github/workflows/   # GitHub Actions CI/CD pipeline
+├─ k8s-manifests/       # Kubernetes Manifests (Deployments, Services, Ingress)
 └─ README.md
 
-## 🔧 Tech Stack
+| Category           | Tools                             |
+| ------------------ | --------------------------------- |
+| Backend            | Node.js (Express), Python (Flask) |
+| Containerization   | Docker                            |
+| Container Registry | AWS ECR                           |
+| CI/CD              | GitHub Actions                    |
+| Code Quality       | **SonarCloud (SonarQube)**        |
+| Security           | Trivy                             |
+| Orchestration      | Kubernetes (Kind)                 |
+| Networking         | NGINX Ingress                     |
 
-| Category | Tools |
-|---------|-------|
-| Backend | Node.js (Express), Python (Flask) |
-| Containerization | Docker |
-| Container Registry | AWS ECR |
-| CI/CD | GitHub Actions |
-| Orchestration | Kubernetes (Kind) |
-| Networking | NGINX Ingress |
-| Security | Trivy |
+🔍 Code Quality & Security
 
-## 🧪 How to Run Locally
+SonarCloud (SonarQube)
 
-### 1️⃣ Clone the repo
-```bash
+Static code analysis for Node.js & Python services
+
+Detects bugs, code smells, and security vulnerabilities
+
+Quality Gate evaluation on CI runs
+
+CI-based analysis via GitHub Actions (automatic analysis disabled)
+
+Trivy
+
+File system security scanning
+
+Reports HIGH & CRITICAL vulnerabilities
+
+🧪 How to Run Locally
+1️⃣ Clone the repo
 git clone https://github.com/fazil2905/multi-cicd-project.git
 cd multi-cicd-project
 
@@ -45,7 +61,9 @@ kind create cluster --name dev-cluster
 kubectl apply -f k8s-manifests/
 
 4️⃣ Port-forward Ingress
-kubectl port-forward --namespace ingress-nginx service/ingress-nginx-controller 80:80 443:443
+kubectl port-forward \
+  --namespace ingress-nginx \
+  service/ingress-nginx-controller 80:80 443:443
 
 5️⃣ Open in Browser
 
@@ -53,12 +71,14 @@ kubectl port-forward --namespace ingress-nginx service/ingress-nginx-controller 
 
 🔹 Python API → http://localhost/py
 
-## 🧭 Future Improvements
+🧭 Future Improvements
 
-- Add unit tests for Node & Python services
-- Add SonarQube Code Analysis
-- Add Prometheus + Grafana monitoring
+Add unit tests for Node & Python services
 
-## 👨‍💻 Author
+Enforce SonarCloud Quality Gate failure in CI
 
-**Fazil Ahmed**
+Add Prometheus + Grafana monitoring
+
+👨‍💻 Author
+
+Fazil Ahmed
